@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>D3.js Sine Wave</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      width: 800px;
+      margin: 0 auto;
+    }
+    svg {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      display: block;
+      margin: 20px auto;
+    }
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+    .line {
+      fill: none;
+      stroke: steelblue;
+      stroke-width: 2px;
+    }
+    .error-message {
+      color: red;
+      padding: 10px;
+      background-color: #ffeeee;
+      border: 1px solid #ffcccc;
+      border-radius: 4px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Sine Wave Visualization with D3.js</h1>
+    <div id="error-container" class="error-message"></div>
+    <div id="chart-container"></div>
+    <div>
+      <label for="frequency">Frequency: </label>
+      <input type="range" id="frequency" min="1" max="10" value="1" step="0.1">
+      <span id="frequency-value">1</span>
+    </div>
+    <div>
+      <label for="amplitude">Amplitude: </label>
+      <input type="range" id="amplitude" min="0.1" max="1" value="0.8" step="0.1">
+      <span id="amplitude-value">0.8</span>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Sine Wave Visualization with D3.js
+     * 
+     * This script generates a sine wave using D3.js curve interpolation.
+     * It provides interactive controls for frequency and amplitude.
+     * 
+     * @author Claude
+     * @version 1.0
+     */
+
+    // Main function to initialize and render the sine wave
+    function initSineWave() {
+      try {
+        // Configuration parameters
+        const config = {
+          width: 700,          // Width of the SVG
+          height: 400,         // Height of the SVG
+          margin: {            // Margins for the visualization
+            top: 40,
+            right: 40,
+            bottom: 60,
+            left: 60
+          },
+          pointCount: 100,     // Number of data points for the sine wave
+          defaultFrequency: 1, // Default frequency of the sine wave
+          defaultAmplitude: 0.8 // Default amplitude of the sine wave
+        };
+
+        // Calculate dimensions for the chart area
+        const chartWidth = config.width - config.margin.left - config.margin.right;
+        const chartHeight = config.height - config.margin.top - config.margin.bottom;
+
+        // Create SVG element
+        const svg = d3.select("#chart-container")
+          .append("svg")
+          .attr("width", config.width)
+          .attr("height", config.height);
+
+        // Create a group element for the chart, translated to account for margins
+        const chart = svg.append("g")
+          .attr("transform", `translate(${config.margin.left},${config.margin.top})`);
+
+        // Create scales for X and Y axes
+        const xScale = d3.scaleLinear()
+          .domain([0, 2 * Math.PI])
+          .range([0, chartWidth]);
+
+        const yScale = d3.scaleLinear()
+          .domain([-1, 1])
+          .range([chartHeight, 0]);
+
+        // Create X and Y axes
+        const xAxis = d3.axisBottom(xScale)
+          .tickFormat(d => `${(d / Math.PI).toFixed(1)}π`);
+        
+        const yAxis = d3.axisLeft(yScale);
+
+        // Add X axis to chart
+        chart.append("g")
+          .attr("class", "axis")
+          .attr("transform", `translate(0,${chartHeight / 2})`)
+          .call(xAxis);
+
+        // Add Y axis to chart
+        chart.append("g")
+          .attr("class", "axis")
+          .call(yAxis);
+
+        // Add X axis label
+        chart.append("text")
+          .attr("text-anchor", "middle")
+          .attr("transform", `translate(${chartWidth / 2},${chartHeight + 40})`)
+          .text("Angle (radians)");
+
+        // Add Y axis label
+        chart.append("text")
+          .attr("text-anchor", "middle")
+          .attr("transform", `translate(-40,${chartHeight / 2}) rotate(-90)`)
+          .text("sin(x)");
+
+        // Create a line generator for the sine wave
+        const line = d3.line()
+          .x(d => xScale(d.x))
+          .y(d => yScale(d.y))
+          .curve(d3.curveCardinal); // Use cardinal interpolation for smooth curves
+
+        // Create a path element for the sine wave
+        const path = chart.append("path")
+          .attr("class", "line");
+
+        // Function to generate sine wave data points
+        function generateSineWaveData(frequency, amplitude) {
+          const data = [];
+          for (let i = 0; i <= config.pointCount; i++) {
+            const x = (2 * Math.PI * i) / config.pointCount;
+            const y = amplitude * Math.sin(frequency * x);
+            data.push({ x, y });
+          }
+          return data;
+        }
+
+        // Function to update the sine wave visualization
+        function updateSineWave(frequency, amplitude) {
+          // Generate data for the sine wave
+          const data = generateSineWaveData(frequency, amplitude);
+          
+          // Update the path with the new data
+          path.datum(data).attr("d", line);
+        }
+
+        // Initialize the visualization with default values
+        updateSineWave(config.defaultFrequency, config.defaultAmplitude);
+
+        // Set up event listeners for the controls
+        const frequencySlider = document.getElementById("frequency");
+        const frequencyValue = document.getElementById("frequency-value");
+        const amplitudeSlider = document.getElementById("amplitude");
+        const amplitudeValue = document.getElementById("amplitude-value");
+
+        frequencySlider.addEventListener("input", function() {
+          const value = parseFloat(this.value);
+          frequencyValue.textContent = value.toFixed(1);
+          updateSineWave(value, parseFloat(amplitudeSlider.value));
+        });
+
+        amplitudeSlider.addEventListener("input", function() {
+          const value = parseFloat(this.value);
+          amplitudeValue.textContent = value.toFixed(1);
+          updateSineWave(parseFloat(frequencySlider.value), value);
+        });
+
+        // Initialize slider values
+        frequencySlider.value = config.defaultFrequency;
+        frequencyValue.textContent = config.defaultFrequency.toFixed(1);
+        amplitudeSlider.value = config.defaultAmplitude;
+        amplitudeValue.textContent = config.defaultAmplitude.toFixed(1);
+
+        console.log("Sine wave visualization initialized successfully");
+      } catch (error) {
+        // Handle any errors that occur during initialization or rendering
+        console.error("Error initializing sine wave visualization:", error);
+        displayError(`Error: ${error.message}`);
+      }
+    }
+
+    /**
+     * Displays an error message to the user
+     * @param {string} message - The error message to display
+     */
+    function displayError(message) {
+      const errorContainer = document.getElementById("error-container");
+      errorContainer.textContent = message;
+      errorContainer.style.display = "block";
+    }
+
+    // Initialize the sine wave visualization when the page loads
+    document.addEventListener("DOMContentLoaded", initSineWave);
+  </script>
+</body>
+</html>
