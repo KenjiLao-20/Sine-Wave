@@ -1,67 +1,351 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>D3.js Sine Wave</title>
+  <title>Professional Sine Wave Visualization</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <style>
+    :root {
+      --primary-color: #3498db;
+      --primary-dark: #2980b9;
+      --secondary-color: #2ecc71;
+      --text-color: #333;
+      --background-light: #f8f9fa;
+      --background-dark: #e9ecef;
+      --accent-color: #e74c3c;
+      --border-color: #ced4da;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background-light);
+      color: var(--text-color);
+      line-height: 1.6;
     }
-    .container {
-      width: 800px;
+    
+    .app-container {
+      max-width: 900px;
       margin: 0 auto;
+      padding: 20px;
     }
+    
+    .header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+      color: white;
+      padding: 20px;
+      border-radius: 10px 10px 0 0;
+      box-shadow: var(--shadow);
+      margin-bottom: 0;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    
+    .subtitle {
+      font-size: 14px;
+      opacity: 0.8;
+      margin-top: 5px;
+    }
+    
+    .main-content {
+      background: white;
+      border-radius: 0 0 10px 10px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    
+    .control-panel {
+      background-color: var(--background-light);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 20px;
+    }
+    
+    .control-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .control-label {
+      width: 100px;
+      font-weight: 600;
+      margin-right: 10px;
+    }
+    
+    .control-slider {
+      flex-grow: 1;
+      margin-right: 15px;
+    }
+    
+    .control-value {
+      width: 50px;
+      background-color: var(--primary-color);
+      color: white;
+      text-align: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      background: #d7dcdf;
+      border-radius: 5px;
+      outline: none;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: var(--primary-color);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background .15s ease-in-out;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb:hover {
+      background: var(--primary-dark);
+    }
+    
+    .visualization-container {
+      position: relative;
+      margin: 20px 0;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    
     svg {
-      background-color: #f9f9f9;
-      border: 1px solid #ddd;
       display: block;
-      margin: 20px auto;
+      margin: 0;
+      padding: 0;
+      background-color: white;
     }
+    
     .axis path,
     .axis line {
       fill: none;
-      stroke: #000;
+      stroke: #999;
       shape-rendering: crispEdges;
     }
+    
+    .axis text {
+      font-size: 11px;
+      fill: #666;
+    }
+    
     .line {
       fill: none;
-      stroke: steelblue;
+      stroke: var(--primary-color);
+      stroke-width: 3px;
+      stroke-linecap: round;
+    }
+    
+    .grid line {
+      stroke: #ddd;
+      stroke-opacity: 0.5;
+      shape-rendering: crispEdges;
+    }
+    
+    .grid path {
+      stroke-width: 0;
+    }
+    
+    .overlay {
+      fill: none;
+      pointer-events: all;
+    }
+    
+    .focus circle {
+      fill: var(--accent-color);
+      stroke: white;
       stroke-width: 2px;
     }
-    .error-message {
-      color: red;
-      padding: 10px;
-      background-color: #ffeeee;
-      border: 1px solid #ffcccc;
-      border-radius: 4px;
+    
+    .tooltip {
+      position: absolute;
       display: none;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      pointer-events: none;
+    }
+    
+    .error-message {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 12px 15px;
+      border: 1px solid #f5c6cb;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      display: none;
+    }
+    
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #777;
+      margin-top: 20px;
+    }
+    
+    .info-panel {
+      background-color: #e3f2fd;
+      border-left: 4px solid var(--primary-color);
+      padding: 10px 15px;
+      margin-bottom: 15px;
+      border-radius: 0 5px 5px 0;
+    }
+    
+    .info-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .preset-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .preset-button {
+      background-color: var(--background-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .preset-button:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    
+    table.data-table th, 
+    table.data-table td {
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      text-align: center;
+    }
+    
+    table.data-table th {
+      background-color: var(--background-dark);
+      font-weight: 600;
+    }
+    
+    table.data-table tr:nth-child(even) {
+      background-color: var(--background-light);
+    }
+    
+    .table-container {
+      margin-top: 20px;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Sine Wave Visualization with D3.js</h1>
-    <div id="error-container" class="error-message"></div>
-    <div id="chart-container"></div>
-    <div>
-      <label for="frequency">Frequency: </label>
-      <input type="range" id="frequency" min="1" max="10" value="1" step="0.1">
-      <span id="frequency-value">1</span>
+  <div class="app-container">
+    <div class="header">
+      <h1>Interactive Sine Wave Visualization</h1>
+      <div class="subtitle">A professional D3.js implementation with dynamic controls</div>
     </div>
-    <div>
-      <label for="amplitude">Amplitude: </label>
-      <input type="range" id="amplitude" min="0.1" max="1" value="0.8" step="0.1">
-      <span id="amplitude-value">0.8</span>
+    
+    <div class="main-content">
+      <div id="error-container" class="error-message"></div>
+      
+      <div class="info-panel">
+        <div class="info-title">About This Visualization</div>
+        <p>This interactive tool visualizes sine waves using D3.js with smooth curve interpolation. Adjust the parameters below to explore different waveforms.</p>
+      </div>
+      
+      <div class="preset-buttons">
+        <button class="preset-button" id="preset-default">Default Wave</button>
+        <button class="preset-button" id="preset-high-freq">High Frequency</button>
+        <button class="preset-button" id="preset-low-amp">Low Amplitude</button>
+      </div>
+      
+      <div class="visualization-container">
+        <div id="chart-container"></div>
+        <div id="tooltip" class="tooltip"></div>
+      </div>
+      
+      <div class="control-panel">
+        <div class="control-group">
+          <div class="control-label">Frequency:</div>
+          <div class="control-slider">
+            <input type="range" id="frequency" min="0.5" max="10" value="1" step="0.1">
+          </div>
+          <div class="control-value" id="frequency-value">1.0</div>
+        </div>
+        
+        <div class="control-group">
+          <div class="control-label">Amplitude:</div>
+          <div class="control-slider">
+            <input type="range" id="amplitude" min="0.1" max="1" value="0.8" step="0.1">
+          </div>
+          <div class="control-value" id="amplitude-value">0.8</div>
+        </div>
+        
+        <div class="control-group">
+          <div class="control-label">Resolution:</div>
+          <div class="control-slider">
+            <input type="range" id="resolution" min="20" max="200" value="100" step="10">
+          </div>
+          <div class="control-value" id="resolution-value">100</div>
+        </div>
+      </div>
+      
+      <div class="table-container">
+        <table class="data-table" id="data-table">
+          <thead>
+            <tr>
+              <th>Angle (π)</th>
+              <th>Angle (rad)</th>
+              <th>sin(x)</th>
+            </tr>
+          </thead>
+          <tbody id="data-body">
+            <!-- Data will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="footer">
+      Interactive Sine Wave Visualization v1.0 | Created with D3.js | ©2025
     </div>
   </div>
 
   <script>
     /**
-     * Sine Wave Visualization with D3.js
+     * Professional Sine Wave Visualization with D3.js
      * 
-     * This script generates a sine wave using D3.js curve interpolation.
-     * It provides interactive controls for frequency and amplitude.
+     * This application provides an interactive visualization of sine waves
+     * using D3.js with advanced features like tooltips, data tables, and
+     * responsive design.
      * 
      * @author Claude
      * @version 1.0
@@ -72,17 +356,18 @@
       try {
         // Configuration parameters
         const config = {
-          width: 700,          // Width of the SVG
-          height: 400,         // Height of the SVG
-          margin: {            // Margins for the visualization
+          width: 800,              // Width of the SVG
+          height: 400,             // Height of the SVG
+          margin: {                // Margins for the visualization
             top: 40,
             right: 40,
             bottom: 60,
             left: 60
           },
-          pointCount: 100,     // Number of data points for the sine wave
-          defaultFrequency: 1, // Default frequency of the sine wave
-          defaultAmplitude: 0.8 // Default amplitude of the sine wave
+          defaultFrequency: 1,     // Default frequency of the sine wave
+          defaultAmplitude: 0.8,   // Default amplitude of the sine wave
+          defaultResolution: 100,  // Default number of data points
+          animationDuration: 500   // Duration for transitions in milliseconds
         };
 
         // Calculate dimensions for the chart area
@@ -93,7 +378,9 @@
         const svg = d3.select("#chart-container")
           .append("svg")
           .attr("width", config.width)
-          .attr("height", config.height);
+          .attr("height", config.height)
+          .attr("viewBox", `0 0 ${config.width} ${config.height}`)
+          .attr("preserveAspectRatio", "xMidYMid meet");
 
         // Create a group element for the chart, translated to account for margins
         const chart = svg.append("g")
@@ -108,50 +395,105 @@
           .domain([-1, 1])
           .range([chartHeight, 0]);
 
-        // Create X and Y axes
-        const xAxis = d3.axisBottom(xScale)
-          .tickFormat(d => `${(d / Math.PI).toFixed(1)}π`);
-        
-        const yAxis = d3.axisLeft(yScale);
+        // Create grid lines
+        function makeGridLines(scale, ticks) {
+          return d3.axisBottom(scale)
+            .ticks(ticks)
+            .tickSize(-chartHeight)
+            .tickFormat("");
+        }
 
-        // Add X axis to chart
+        function makeVerticalGridLines(scale, ticks) {
+          return d3.axisLeft(scale)
+            .ticks(ticks)
+            .tickSize(-chartWidth)
+            .tickFormat("");
+        }
+
+        // Add X grid lines
         chart.append("g")
+          .attr("class", "grid")
+          .attr("transform", `translate(0,${chartHeight})`)
+          .call(makeGridLines(xScale, 10));
+
+        // Add Y grid lines
+        chart.append("g")
+          .attr("class", "grid")
+          .call(makeVerticalGridLines(yScale, 10));
+
+        // Add X axis
+        const xAxis = chart.append("g")
           .attr("class", "axis")
           .attr("transform", `translate(0,${chartHeight / 2})`)
-          .call(xAxis);
+          .call(d3.axisBottom(xScale)
+            .tickFormat(d => `${(d / Math.PI).toFixed(1)}π`));
 
-        // Add Y axis to chart
-        chart.append("g")
+        // Add Y axis
+        const yAxis = chart.append("g")
           .attr("class", "axis")
-          .call(yAxis);
+          .call(d3.axisLeft(yScale));
 
         // Add X axis label
         chart.append("text")
           .attr("text-anchor", "middle")
-          .attr("transform", `translate(${chartWidth / 2},${chartHeight + 40})`)
+          .attr("transform", `translate(${chartWidth / 2},${chartHeight + 35})`)
+          .style("font-size", "12px")
+          .style("fill", "#666")
           .text("Angle (radians)");
 
         // Add Y axis label
         chart.append("text")
           .attr("text-anchor", "middle")
-          .attr("transform", `translate(-40,${chartHeight / 2}) rotate(-90)`)
+          .attr("transform", `translate(-35,${chartHeight / 2}) rotate(-90)`)
+          .style("font-size", "12px")
+          .style("fill", "#666")
           .text("sin(x)");
 
         // Create a line generator for the sine wave
         const line = d3.line()
           .x(d => xScale(d.x))
           .y(d => yScale(d.y))
-          .curve(d3.curveCardinal); // Use cardinal interpolation for smooth curves
+          .curve(d3.curveCardinal.tension(0.5)); // Use cardinal interpolation for smooth curves
 
         // Create a path element for the sine wave
         const path = chart.append("path")
           .attr("class", "line");
 
+        // Create a tooltip element
+        const tooltip = d3.select("#tooltip");
+
+        // Add a circle for tracking mouse position
+        const focus = chart.append("g")
+          .attr("class", "focus")
+          .style("display", "none");
+
+        focus.append("circle")
+          .attr("r", 5);
+
+        // Add an overlay to handle mouse events
+        const overlay = chart.append("rect")
+          .attr("class", "overlay")
+          .attr("width", chartWidth)
+          .attr("height", chartHeight)
+          .style("opacity", 0)
+          .on("mouseover", () => focus.style("display", null))
+          .on("mouseout", () => {
+            focus.style("display", "none");
+            tooltip.style("display", "none");
+          })
+          .on("mousemove", mousemove);
+
+        // State variables for current settings
+        let currentFrequency = config.defaultFrequency;
+        let currentAmplitude = config.defaultAmplitude;
+        let currentResolution = config.defaultResolution;
+        let currentData = [];
+
         // Function to generate sine wave data points
-        function generateSineWaveData(frequency, amplitude) {
+        function generateSineWaveData(frequency, amplitude, pointCount) {
           const data = [];
-          for (let i = 0; i <= config.pointCount; i++) {
-            const x = (2 * Math.PI * i) / config.pointCount;
+          for (let i = 0; i <= pointCount; i++) {
+            const x = (2 * Math.PI * i) / pointCount;
             const y = amplitude * Math.sin(frequency * x);
             data.push({ x, y });
           }
@@ -159,40 +501,155 @@
         }
 
         // Function to update the sine wave visualization
-        function updateSineWave(frequency, amplitude) {
+        function updateSineWave(frequency, amplitude, resolution, animate = true) {
+          // Update state variables
+          currentFrequency = frequency;
+          currentAmplitude = amplitude;
+          currentResolution = resolution;
+          
           // Generate data for the sine wave
-          const data = generateSineWaveData(frequency, amplitude);
+          currentData = generateSineWaveData(frequency, amplitude, resolution);
           
           // Update the path with the new data
-          path.datum(data).attr("d", line);
+          if (animate) {
+            path.datum(currentData)
+              .transition()
+              .duration(config.animationDuration)
+              .attr("d", line);
+          } else {
+            path.datum(currentData).attr("d", line);
+          }
+          
+          // Update the data table
+          updateDataTable(currentData);
         }
 
-        // Initialize the visualization with default values
-        updateSineWave(config.defaultFrequency, config.defaultAmplitude);
+        // Function to handle mouse movement over the chart
+        function mousemove(event) {
+          const mouseX = d3.pointer(event)[0];
+          const x0 = xScale.invert(mouseX);
+          
+          // Find the closest data point to the mouse position
+          const bisect = d3.bisector(d => d.x).left;
+          const i = bisect(currentData, x0, 1);
+          const d0 = currentData[i - 1];
+          const d1 = currentData[i];
+          const d = x0 - d0.x > d1.x - x0 ? d1 : d0;
+          
+          // Update the focus circle position
+          focus.attr("transform", `translate(${xScale(d.x)},${yScale(d.y)})`);
+          
+          // Update the tooltip content and position
+          tooltip
+            .style("display", "block")
+            .style("left", `${xScale(d.x) + config.margin.left + 10}px`)
+            .style("top", `${yScale(d.y) + config.margin.top - 28}px`)
+            .html(`Angle: ${(d.x / Math.PI).toFixed(2)}π<br>sin(x): ${d.y.toFixed(3)}`);
+        }
+
+        // Function to update the data table
+        function updateDataTable(data) {
+          // Select subset of the data for the table (to avoid overwhelming the table)
+          const tableData = data.filter((d, i) => i % Math.max(1, Math.floor(data.length / 10)) === 0);
+          
+          // Clear existing table rows
+          const tableBody = document.getElementById("data-body");
+          tableBody.innerHTML = "";
+          
+          // Add new rows
+          tableData.forEach(d => {
+            const row = document.createElement("tr");
+            
+            const angleInPi = document.createElement("td");
+            angleInPi.textContent = (d.x / Math.PI).toFixed(2);
+            
+            const angleInRad = document.createElement("td");
+            angleInRad.textContent = d.x.toFixed(2);
+            
+            const sinValue = document.createElement("td");
+            sinValue.textContent = d.y.toFixed(3);
+            
+            row.appendChild(angleInPi);
+            row.appendChild(angleInRad);
+            row.appendChild(sinValue);
+            
+            tableBody.appendChild(row);
+          });
+        }
 
         // Set up event listeners for the controls
         const frequencySlider = document.getElementById("frequency");
         const frequencyValue = document.getElementById("frequency-value");
         const amplitudeSlider = document.getElementById("amplitude");
         const amplitudeValue = document.getElementById("amplitude-value");
+        const resolutionSlider = document.getElementById("resolution");
+        const resolutionValue = document.getElementById("resolution-value");
 
         frequencySlider.addEventListener("input", function() {
           const value = parseFloat(this.value);
           frequencyValue.textContent = value.toFixed(1);
-          updateSineWave(value, parseFloat(amplitudeSlider.value));
+          updateSineWave(value, currentAmplitude, currentResolution);
         });
 
         amplitudeSlider.addEventListener("input", function() {
           const value = parseFloat(this.value);
           amplitudeValue.textContent = value.toFixed(1);
-          updateSineWave(parseFloat(frequencySlider.value), value);
+          updateSineWave(currentFrequency, value, currentResolution);
         });
+
+        resolutionSlider.addEventListener("input", function() {
+          const value = parseInt(this.value);
+          resolutionValue.textContent = value;
+          updateSineWave(currentFrequency, currentAmplitude, value);
+        });
+
+        // Set up event listeners for preset buttons
+        document.getElementById("preset-default").addEventListener("click", function() {
+          frequencySlider.value = 1.0;
+          frequencyValue.textContent = "1.0";
+          amplitudeSlider.value = 0.8;
+          amplitudeValue.textContent = "0.8";
+          resolutionSlider.value = 100;
+          resolutionValue.textContent = "100";
+          updateSineWave(1.0, 0.8, 100);
+        });
+
+        document.getElementById("preset-high-freq").addEventListener("click", function() {
+          frequencySlider.value = 5.0;
+          frequencyValue.textContent = "5.0";
+          amplitudeSlider.value = 0.8;
+          amplitudeValue.textContent = "0.8";
+          resolutionSlider.value = 150;
+          resolutionValue.textContent = "150";
+          updateSineWave(5.0, 0.8, 150);
+        });
+
+        document.getElementById("preset-low-amp").addEventListener("click", function() {
+          frequencySlider.value = 2.0;
+          frequencyValue.textContent = "2.0";
+          amplitudeSlider.value = 0.3;
+          amplitudeValue.textContent = "0.3";
+          resolutionSlider.value = 100;
+          resolutionValue.textContent = "100";
+          updateSineWave(2.0, 0.3, 100);
+        });
+
+        // Initialize the visualization with default values
+        updateSineWave(config.defaultFrequency, config.defaultAmplitude, config.defaultResolution, false);
 
         // Initialize slider values
         frequencySlider.value = config.defaultFrequency;
         frequencyValue.textContent = config.defaultFrequency.toFixed(1);
         amplitudeSlider.value = config.defaultAmplitude;
         amplitudeValue.textContent = config.defaultAmplitude.toFixed(1);
+        resolutionSlider.value = config.defaultResolution;
+        resolutionValue.textContent = config.defaultResolution;
+
+        // Handle window resize
+        window.addEventListener("resize", function() {
+          // Redraw would go here in a more complex application
+          // For this simple case, the SVG's viewBox handles responsiveness
+        });
 
         console.log("Sine wave visualization initialized successfully");
       } catch (error) {
